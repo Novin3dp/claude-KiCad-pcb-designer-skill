@@ -13,6 +13,8 @@ Two [Claude Code](https://claude.com/claude-code) skills that take a board from 
 
 They work together (schematic first, then PCB) but each can be used on its own.
 
+> **Keywords:** KiCad 9 / KiCad 10 · PCB design automation · schematic generator · PCB autorouter · `kicad-cli` ERC/DRC · Gerber X2 · BGA fan-out · DDR3 length tuning · differential pairs · Claude Code skills · agent skills
+
 ---
 
 ## Table of contents
@@ -276,6 +278,7 @@ These rules are part of the skills and are what make the output trustworthy:
 ## Documentation
 
 - [Installation and environment setup](docs/installation.md)
+- [GitHub description and topics](docs/repository-metadata.md)
 - [Schematic generator guide](docs/schematic-generator.md)
 - [PCB + autorouter workflow guide](docs/pcb-autorouter-workflow.md)
 
