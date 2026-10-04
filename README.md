@@ -1,6 +1,13 @@
 # Claude Code KiCad PCB Designer Skill — AI PCB Design Automation
 
-Two [Claude Code](https://claude.com/claude-code) skills for **AI-assisted KiCad PCB design automation**, taking a board from **idea → ERC-clean KiCad schematic → placed and routed PCB → DRC-clean design → manufacturer-ready release package**, with every step scripted, reproducible and verified with `kicad-cli`.
+An **AI-agent-ready KiCad PCB design system**: reusable Agent Skills plus a runnable Python/C toolkit that can take a real board from **requirements → schematic → placement → routing → verification → manufacturing release**. The toolkit is **not tied to Claude Code**: any AI agent or automation system that can run shell/Python commands and read/write project files can drive the same deterministic design tools.
+
+The repository combines two layers:
+
+1. **Agent Skills** — engineering instructions, sequencing, constraints and verification rules that tell an AI what to do and what to check.
+2. **KAT (`toolkit/`)** — the executable implementation: KiCad `pcbnew` automation, negotiated-congestion autorouting, local routing/repair, plane tools, DDR/differential-pair tuning, ECO, visualization and schematic-generation utilities.
+
+Together they let an AI agent **actually generate and modify KiCad design artifacts**, rather than only produce PCB-design advice or text.
 
 ![KiCad 3D viewer render of a dense multi-layer board with a BGA SoC, 40-pin header, USB-C and a power stage](docs/images/example-board-3d.png)
 
@@ -10,7 +17,7 @@ Two [Claude Code](https://claude.com/claude-code) skills for **AI-assisted KiCad
 |---|---|
 | [`kicad-schematic-generator`](skills/kicad-schematic-generator/SKILL.md) | Generates complete, hierarchical KiCad 9/10 schematic projects from Python and proves them correct with ERC, netlist checks and design-specific assertions. |
 | [`kicad-pcb-autorouter-workflow`](skills/kicad-pcb-autorouter-workflow/SKILL.md) | A staged process for placing and routing a custom PCB with a negotiated-congestion (PathFinder-style) autorouter, repairing planes and DRC, tuning length/skew, reviewing in an interactive HTML viewer and shipping fab files. |
-| [`toolkit/`](toolkit/README.md) (KAT) | The Python and C code behind the workflow: a negotiated-congestion autorouter, local repair tools, plane/pour tools, DDR and pair tuning, ECO, an interactive viewer and a schematic generator. Plain command-line tools, so **any AI agent or person can run them**, not only Claude. |
+| [`toolkit/`](toolkit/README.md) (KAT) | The **runnable design engine**: Python/C KiCad automation for schematic generation, placement/routing support, negotiated-congestion autorouting, local repair, planes, DDR/differential-pair tuning, ECO, visualization and release checks. It is **AI-agent agnostic** and can be driven by Claude Code, Codex, Copilot, Gemini/Antigravity, Cursor, another Agent Skills-compatible runtime, or a human. |
 
 The skills tell an AI *what to do and what to check*; the toolkit provides the *code to do it*. They work together (schematic first, then PCB) but each can be used on its own. AI agents should start at [`AGENTS.md`](AGENTS.md).
 
@@ -21,7 +28,7 @@ The skills tell an AI *what to do and what to check*; the toolkit provides the *
 
 ## What is this project?
 
-**Claude Code KiCad PCB Designer Skill** is an open-source **AI-assisted PCB design workflow for KiCad**. It gives [Claude Code](https://claude.com/claude-code) reusable skills for **KiCad schematic generation, PCB placement, PCB autorouting, ERC/DRC verification, signal-length tuning, design review, and manufacturing release**.
+**Claude Code KiCad PCB Designer Skill** is an open-source **AI-assisted, executable PCB design system for KiCad**. It is not just a prompt library and not just an autorouter: the repository contains the instructions **and the source code that performs the design operations**. It gives [Claude Code](https://claude.com/claude-code) reusable skills for **KiCad schematic generation, PCB placement, PCB autorouting, ERC/DRC verification, signal-length tuning, design review, and manufacturing release**.
 
 If you are looking for a **KiCad AI agent**, **Claude Code PCB design skill**, **KiCad automation**, **AI PCB designer**, **KiCad schematic generator**, or **KiCad autorouter workflow**, this repository is designed for that use case.
 
@@ -52,7 +59,7 @@ If you are looking for a **KiCad AI agent**, **Claude Code PCB design skill**, *
 
 ### Why this repository is different
 
-This is not only a prompt collection or a wrapper around an external autorouter. The skills define a **verified, staged engineering workflow** from schematic to fabrication:
+This is **not only a prompt collection, a chat workflow, or a wrapper around an external autorouter**. The repository contains the runnable implementation used by the workflow. The skills define a **verified, staged engineering workflow** from schematic to fabrication:
 
 **requirements → schematic → ERC/netcheck → placement → BGA fan-out → planes/decoupling → autorouting → DRC repair → length/skew tuning → independent design review → ECO → Gerber/BOM/CPL release**
 
@@ -203,7 +210,26 @@ Guidance for counting fill pieces per zone, DRU rules that let plane web flow be
 
 Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZONE_FILLER`; one bad DRU rule silently dropping all custom rules; `GetConnectedItems` not being transitive; SWIG wrappers degrading after `board.Remove()`; unlocked vias disappearing on rip-up; SWIG proxies that must not be compared with `is`; footprint-owned rule areas that every custom tool must load; pad sizes that are pre-rotation; the roughly 2-minute shell limit that requires background jobs with `.done` markers; never `pkill -f` with a pattern that matches your own shell. See [docs/pcb-autorouter-workflow.md](docs/pcb-autorouter-workflow.md).
 
-## The toolkit (KAT): runnable Python code
+## The toolkit (KAT): the executable design engine
+
+`toolkit/` is the most important addition for AI-agent use. An AI does not need to understand or rewrite the KiCad file format itself: it can call the toolkit's small CLI programs, pass a source `.kicad_pcb` and configuration, and receive a new board file. Each stage produces a new artifact, which makes the workflow reproducible and reviewable.
+
+### What an AI agent can actually do with KAT
+
+- Generate a KiCad schematic from Python and verify connectivity/ERC.
+- Read a placed KiCad PCB through `pcbnew` and create a new routed/modified PCB.
+- Run negotiated-congestion autorouting with per-board routing configuration.
+- Route difficult individual connections with exact grid A*.
+- Move vias or components to open legal routing channels.
+- Restore BGA fan-out and repair stranded plane connectivity.
+- Create and repair power/GND pours and stitching vias.
+- Tune USB/HDMI/Ethernet differential-pair skew and DDR3 length matching.
+- Apply schematic/netlist ECOs to an already-routed board.
+- Generate DRC summaries, layer/net plots and an interactive HTML viewer that an AI can inspect.
+
+This is the key distinction: **the AI supplies engineering intent and decisions; the toolkit supplies deterministic geometry manipulation and verification primitives.**
+
+
 
 **Folder:** [`toolkit/`](toolkit/README.md) (kicad-autoroute-toolkit). Imported unchanged from its original project, with its own README, `AGENTS.md`, MIT license, Makefile and smoke test.
 
