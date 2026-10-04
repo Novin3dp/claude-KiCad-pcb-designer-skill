@@ -233,6 +233,10 @@ From a Claude Code session:
 
 For local development, clone the repository and load it directly with Claude Code's plugin directory support.
 
+### Marketplace publication
+
+The repository is packaged in the standard Claude Code plugin structure with `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`. The next distribution step is submission to Anthropic's community plugin directory. The directory accepts third-party plugin submissions through its submission form; after review and approval, accepted plugins are mirrored into the community marketplace.
+
 ## Installation
 
 ### Option A: install script
@@ -299,6 +303,14 @@ Ubuntu 24.04 setup commands are in [docs/installation.md](docs/installation.md#k
 .
 ├── README.md
 ├── LICENSE
+├── CITATION.cff                 software citation metadata
+├── llms.txt                     machine-readable project map for AI tools
+├── .claude-plugin/
+│   ├── plugin.json              Claude Code plugin metadata
+│   └── marketplace.json         Claude Code marketplace manifest
+├── .github/
+│   └── workflows/
+│       └── validate-plugin.yml  manifest + skill structure validation
 ├── skills/
 │   ├── kicad-schematic-generator/
 │   │   ├── SKILL.md              skill instructions (embeds kigen.py and netcheck.py verbatim)
