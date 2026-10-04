@@ -1,0 +1,49 @@
+# Claude Code KiCad PCB Designer Skill
+
+> Open-source Claude Code skills for AI-assisted KiCad PCB design automation, from schematic generation through PCB routing, ERC/DRC verification, and manufacturing release.
+
+## Repository
+- GitHub: https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill
+- License: MIT
+
+## Skills
+- **kicad-schematic-generator** — Generate reproducible KiCad 9/10 schematics from Python, including hierarchical sheets, custom symbols, BGA support, ERC verification, netlist checks, and PDF review.
+  - Source: skills/kicad-schematic-generator/SKILL.md
+- **kicad-pcb-autorouter-workflow** — End-to-end KiCad PCB placement and routing workflow with negotiated-congestion routing, plane/DRC repair, differential-pair routing, length/skew tuning, review, ECO, and manufacturing release.
+  - Source: skills/kicad-pcb-autorouter-workflow/SKILL.md
+
+## Documentation
+- https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill
+- docs/claude-code-kicad-pcb-design.md
+- docs/installation.md
+- docs/schematic-generator.md
+- docs/pcb-autorouter-workflow.md
+
+## Installation
+git clone https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill.git
+cd claude-KiCad-pcb-designer-skill
+./scripts/install.sh
+
+Manual installation:
+cp -r skills/kicad-schematic-generator ~/.claude/skills/
+cp -r skills/kicad-pcb-autorouter-workflow ~/.claude/skills/
+
+## Capabilities
+- Claude Code PCB design
+- Claude Code KiCad automation
+- AI-assisted PCB design and PCB layout
+- KiCad schematic generation
+- KiCad PCB routing and autorouting
+- KiCad ERC/DRC automation
+- kicad-cli verification
+- pcbnew Python automation
+- BGA PCB routing and fan-out
+- DDR3 PCB design and length/skew matching
+- differential-pair routing
+- Gerber/BOM/CPL manufacturing release
+
+## Typical workflow
+Requirements → schematic → ERC/netcheck → placement → BGA fan-out → power/ground planes → routing → DRC repair → length/skew tuning → independent design review → ECO → manufacturing outputs.
+
+## Compatibility
+Designed primarily for Claude Code and KiCad workflows. The skills are packaged as standard SKILL.md directories and can also be consumed by other Agent Skills-compatible tools where supported.
