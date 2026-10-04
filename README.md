@@ -17,6 +17,46 @@ They work together (schematic first, then PCB) but each can be used on its own.
 
 ---
 
+
+## What is this project?
+
+**Claude Code KiCad PCB Designer Skill** is an open-source **AI-assisted PCB design workflow for KiCad**. It gives [Claude Code](https://claude.com/claude-code) reusable skills for **KiCad schematic generation, PCB placement, PCB autorouting, ERC/DRC verification, signal-length tuning, design review, and manufacturing release**.
+
+If you are looking for a **KiCad AI agent**, **Claude Code PCB design skill**, **KiCad automation**, **AI PCB designer**, **KiCad schematic generator**, or **KiCad autorouter workflow**, this repository is designed for that use case.
+
+### Search terms and aliases
+
+- Claude Code KiCad skill
+- Claude Code PCB design
+- Claude Code PCB designer
+- AI PCB design
+- AI PCB layout
+- AI EDA agent
+- KiCad AI automation
+- KiCad automation with Python
+- KiCad schematic generator
+- KiCad PCB autorouter
+- KiCad PCB routing automation
+- KiCad ERC DRC automation
+- KiCad 9 automation
+- KiCad 10 automation
+- kicad-cli ERC DRC
+- pcbnew Python automation
+- BGA PCB routing
+- DDR3 PCB length matching
+- differential pair routing
+- Gerber manufacturing release
+- Claude Code hardware design
+- Claude skills for electronics
+
+### Why this repository is different
+
+This is not only a prompt collection or a wrapper around an external autorouter. The skills define a **verified, staged engineering workflow** from schematic to fabrication:
+
+**requirements → schematic → ERC/netcheck → placement → BGA fan-out → planes/decoupling → autorouting → DRC repair → length/skew tuning → independent design review → ECO → Gerber/BOM/CPL release**
+
+The workflow is intended for real boards, including dense multi-layer designs, BGA devices, DDR3 memory, differential pairs, power planes, and manufacturing outputs.
+
 ## Table of contents
 
 - [Capabilities at a glance](#capabilities-at-a-glance)
