@@ -55,6 +55,8 @@ They work together (schematic first, then PCB) but each can be used on its own.
 - BGA fan-out (dog-bone vias), split power planes with wide necks, decoupling-capacitor via strategy, via-in-pad where rear rows cannot escape.
 - A negotiated-congestion autorouter workflow: one routing object per net or differential pair, a legality field built from all existing copper, and rip-up with present x history pressure until conflicts reach 0 or plateau.
 - Per-board configuration of layers, grid, net-class clearances, widths, layer costs, pair handling, via cost, keepouts and plane nets.
+- Small exact tools for single connections in dense areas: grid A* with exact clearance, via nudging, fan-out restoration, nearest-legal-spot part placement and plane-via insertion.
+- Edge-connector checks: the mating direction (for example a card slot facing inward) is verified, not just the position.
 
 **Signal integrity and tuning**
 - Intra-pair skew checks for DQS/CK and other pairs, not just lane matching.
@@ -62,9 +64,16 @@ They work together (schematic first, then PCB) but each can be used on its own.
 - 2-D field-solver Zdiff for loosely coupled pairs, so DRC rules are relaxed *with a documented reason* instead of shipping dozens of unexplained warnings.
 - DDR mismatch reported in mm and ps (about 6-7 ps/mm) with a safe starting DRAM clock.
 
+**Design review and ECOs**
+- A full "0 to 100" design review: four independent read-only review passes (power, SoC/DDR, peripherals, PCB physical/fab), after which **every finding is verified against the reference schematic before anything is changed** and classified as blocker / major / minor / false alarm.
+- A checklist of defects that survive clean DRC/ERC/parity (unconnected footprint pads, SoC special balls wired differently from the vendor reference, backwards pull-up diodes, rail set points above a pin's absolute maximum, buck hot-loop problems, and more).
+- ECO workflow for schematic changes on an already-routed board: references never shift, old-vs-new netlist diff, footprint swaps in place, only the affected copper is ripped and rerouted.
+
 **Review and delivery**
 - Interactive, self-contained HTML viewer: canvas renderer, per-layer toggles, via toggle, net/part search and highlight, stage picker, placement table, stackup/impedance tab, per-stage notes.
 - Release checklist: merged `.kicad_pro`/`.kicad_dru`, `kicad-cli pcb drc --schematic-parity` to 0, real stackup, Gerber X2, Excellon, positions, assembler CPL, grouped BOM, schematic PDF, ERC/DRC reports and renders, all packaged into `kicad/`, `fab/`, `docs/`, `tools/`.
+- Assembly readiness: BOM mapped to MPN and LCSC part numbers with stock/package checks, a JLCPCB-format BOM and CPL, three fiducials per side, silkscreen reference re-placement, and an optional second-opinion automated review with a written waiver list.
+- A release README whose top section is "what changed in this version" (area / problem / fix) and "checked and found correct".
 - Fabrication notes: impedance control, ENIG for fine-pitch BGA, epoxy-filled and capped vias for via-in-pad, minimum track/space/via, double-sided assembly.
 
 ---
@@ -123,31 +132,33 @@ Duplicate references across sheets that ERC misses, pin-name vs. pin-number coll
 
 **Skill file:** [`skills/kicad-pcb-autorouter-workflow/SKILL.md`](skills/kicad-pcb-autorouter-workflow/SKILL.md)
 
-A repeatable process for taking a KiCad schematic to a routed, DRC-clean, manufacturer-ready PCB. It was proven on a 6-layer Allwinner H3 + DDR3 single-board computer (85 x 56 mm, TFBGA-347 at 0.65 mm pitch, micro-HDMI at 0.4 mm pitch, 281 parts, DRC 0 / ERC 0 / schematic parity 0).
+A repeatable process for taking a KiCad schematic to a routed, DRC-clean, manufacturer-ready PCB. It was proven on a 6-layer Allwinner H3 + DDR3 single-board computer (85 x 56 mm, TFBGA-347 at 0.65 mm pitch, HDMI Type A, 275 parts, DRC 0 / ERC 0 / schematic parity 0), taken through ECO releases v2 to v5.1 including a full independent design review.
 
-**Important:** this skill is a *methodology and checklist* that Claude executes by writing per-project Python scripts against KiCad's `pcbnew` API (for example `stage1.py`, `stage2.py`, `ncroute.py`, `cfg_<board>.py`). The router itself is generated and tuned for each board; it is not a standalone binary shipped in this repository.
+**Important:** this skill is a *methodology and checklist* that Claude executes by writing per-project Python scripts against KiCad's `pcbnew` API (for example `stage1.py`, `stage2.py`, `ncroute.py`, `cfg_<board>.py`, and helper tools such as `astar1.py`, `movevia.py`, `place_free.py`, `plane_via.py`). The skill describes what each helper does; the code is not included here. The router itself is generated and tuned for each board; it is not a standalone binary shipped in this repository.
 
 ### What each stage covers
 
 | Stage | Content |
 |---|---|
 | Schematic first | ERC to 0, then netlist export. |
-| Placement | Outline, holes, keepouts, per-block placement, courtyard checks; power/GND weighting, decap anchoring, escape corridors, chain-order and RF pad-order checks. |
+| Placement | Outline, holes, keepouts, per-block placement, courtyard checks; power/GND weighting, decap anchoring, escape corridors, chain-order and RF pad-order checks, buck-converter unit placement, edge-connector mating direction. |
 | Fan-out, planes, decaps | BGA dog-bone vias, split plane zones with wide necks, via-in-pad (IPC-4761 type VII), locked fan-out copper. |
-| Autorouting | Negotiated-congestion router, staged by net group, fat-pair differential handling, restart-safe chunks, separate `failed` vs. `dropped` accounting. |
-| DRC loop | Fix in order: shorts, clearance, unconnected, tracks_crossing, diff_pair_*, dangling. |
-| Stuck nets | Connected-component analysis of the legality grid to tell a placement problem from a router problem. |
-| Length and skew | Pair skew, accordion trimming, Zdiff via field solver, DDR mismatch in mm and ps. |
+| Autorouting | Negotiated-congestion router, staged by net group (`NETRX`), fat-pair differential handling, only-routes-what-is-missing behaviour for local ECOs, `STAG` budgeting, separate `failed` vs. `dropped` accounting. |
+| DRC loop | DRC on a refilled copy after each change; fix in order: shorts, clearance, unconnected, tracks_crossing, items_not_allowed, diff_pair_*, dangling. |
+| Dense single connections | Exact A* router, via nudging, fan-out restoration and free-spot placement; connected-component analysis to tell a placement problem from a router problem. |
+| Length and skew | Rubber-band old meanders, tune each DDR byte lane to its own DQS, match pairs first, Zdiff via field solver, DDR mismatch in mm and ps. |
+| Design review | Four parallel read-only review passes, finding-by-finding verification against reference schematics, blocker/major/minor/false-alarm classification. |
+| ECO | Generator-driven schematic changes, netlist diff, in-place footprint swaps, minimal rip-up and reroute. |
 | Viewer | Self-contained interactive HTML viewer, published stage by stage. |
-| Release | Merged project files, parity DRC, stackup, Gerber X2, Excellon, CPL, BOM, renders, README, zip. |
+| Release | Merged project files, parity DRC, stackup, supplier-mapped BOM, fiducials, silk cleanup, Gerber X2, Excellon, CPL, renders, optional second-opinion review, README, zip. |
 
 ### Planes, pours and connectivity repair
 
-Guidance for counting fill pieces per zone, DRU rules that let plane web flow between fan-out vias, a union-find cluster linker with grid Dijkstra to bridge stranded islands, outer GND pours with stitching vias, and relocating stranded two-pin parts.
+Guidance for counting fill pieces per zone, DRU rules that let plane web flow between fan-out vias, a union-find cluster linker with grid Dijkstra to bridge stranded islands, vias for orphan plane pads, exact-match dangling-copper cleanup, outer GND pours with stitching, and widening a power feed without breaking another plane's connectivity.
 
 ### Tooling pitfalls it records
 
-Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZONE_FILLER`; one bad DRU rule silently dropping all custom rules; `GetConnectedItems` not being transitive; SWIG wrappers degrading after `board.Remove()`; unlocked vias disappearing on rip-up; never `pkill -f` with a pattern that matches your own shell. See [docs/pcb-autorouter-workflow.md](docs/pcb-autorouter-workflow.md).
+Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZONE_FILLER`; one bad DRU rule silently dropping all custom rules; `GetConnectedItems` not being transitive; SWIG wrappers degrading after `board.Remove()`; unlocked vias disappearing on rip-up; SWIG proxies that must not be compared with `is`; footprint-owned rule areas that every custom tool must load; pad sizes that are pre-rotation; the roughly 2-minute shell limit that requires background jobs with `.done` markers; never `pkill -f` with a pattern that matches your own shell. See [docs/pcb-autorouter-workflow.md](docs/pcb-autorouter-workflow.md).
 
 ---
 
@@ -265,7 +276,9 @@ These rules are part of the skills and are what make the output trustworthy:
 - Every stage is reported as it completes, and `failed` (never routed) and `dropped` (removed for conflicts) are never blurred.
 - Cosmetic leftovers (silk overlap, stale notes) are separated from real risks (DDR timing, no SI/PI simulation, no 3D models for an enclosure check).
 - A pre-design is never presented as final.
-- Third-party "PCB pipeline" tools are read fully before their output is trusted.
+- Review findings are verified by looking at the reference schematic before any change is made; automated reviewers both invent problems and find real ones.
+- A board can be DRC/ERC/parity clean and still be wrong (a card slot facing inward, a SoC pin on the wrong rail), so a clean report is never treated as proof of correctness.
+- Third-party "PCB pipeline" tools are read fully before their output is trusted. The optional second-opinion reviewer named in the PCB skill (`sabas0ba/kicad_skills`, Apache-2.0) is an external project; review it before vendoring it.
 
 ## Limitations
 
