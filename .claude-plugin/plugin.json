@@ -1,0 +1,32 @@
+{
+  "name": "kicad-pcb-designer",
+  "version": "1.0.0",
+  "description": "Claude Code skills for AI-assisted KiCad PCB design automation: schematic generation, ERC/DRC verification, placement, routing, BGA fan-out, DDR3 length matching, design review, and manufacturing release.",
+  "author": {
+    "name": "Novin3dp",
+    "url": "https://github.com/Novin3dp"
+  },
+  "homepage": "https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill",
+  "repository": "https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill",
+  "license": "MIT",
+  "keywords": [
+    "kicad",
+    "kicad-9",
+    "kicad-10",
+    "pcb",
+    "pcb-design",
+    "pcb-routing",
+    "autorouter",
+    "schematic",
+    "erc",
+    "drc",
+    "kicad-cli",
+    "pcbnew",
+    "bga",
+    "ddr3",
+    "claude-code",
+    "claude-skills",
+    "ai-pcb-design",
+    "hardware-design"
+  ]
+}
