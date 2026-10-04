@@ -1,6 +1,8 @@
 # Instructions for AI agents (any model, any tool)
 
-This repository helps you design a KiCad board end to end: schematic, placement, routing, checks, hand-off.
+This repository is an **AI-agent-ready PCB design system**, not merely a Claude prompt pack. Use the Agent Skills for engineering procedure and the `toolkit/` source code as the executable implementation. The same toolkit can be driven by Claude Code, Codex, Copilot, Gemini/Antigravity, Cursor, another compatible agent, or a human script.
+
+It helps you design a KiCad board end to end: schematic, placement, routing, checks, review and manufacturing hand-off.
 You do not need Claude Code to use it. Everything runs as plain Python / shell commands.
 
 ## Where to start
@@ -11,8 +13,7 @@ You do not need Claude Code to use it. Everything runs as plain Python / shell c
 | Place, route, repair and release a PCB | `toolkit/AGENTS.md` (full procedure), then `skills/kicad-pcb-autorouter-workflow/SKILL.md` (rationale and pitfalls) | tools in `toolkit/kat/` (`ncroute.py`, `astar1.py`, `drc.sh`, ...) |
 | Understand a tool's arguments | `toolkit/README.md` (tool reference table) | `python3 toolkit/kat/<tool>.py` |
 
-`SKILL.md` files are written as Claude Code skills (front matter plus instructions), but they are ordinary Markdown:
-read them as procedures and checklists.
+`SKILL.md` files are written as Claude Code/Agent Skills instructions, but they are ordinary Markdown: read them as procedures and checklists. The **actual executable PCB operations live in `toolkit/`**; prefer invoking those tools over inventing equivalent file-editing code.
 
 ## Setup check (do this first, and tell the user what you find)
 
