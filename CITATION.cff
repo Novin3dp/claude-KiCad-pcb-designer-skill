@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use Claude Code KiCad PCB Designer Skill, please cite this repository."
+type: software
+title: "Claude Code KiCad PCB Designer Skill"
+version: "1.0.0"
+date-released: "2026-10-03"
+authors:
+  - name: "Novin3dp"
+repository-code: "https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill"
+url: "https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill"
+license: "MIT"
+keywords:
+  - "Claude Code"
+  - "KiCad"
+  - "PCB design"
+  - "AI PCB design"
+  - "EDA"
+  - "PCB automation"
+  - "schematic generation"
+  - "PCB routing"
+  - "ERC"
+  - "DRC"

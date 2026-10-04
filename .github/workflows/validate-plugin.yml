@@ -1,0 +1,49 @@
+name: Validate Claude Code plugin
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate plugin manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for name in [".claude-plugin/plugin.json", ".claude-plugin/marketplace.json"]:
+              path = Path(name)
+              data = json.loads(path.read_text(encoding="utf-8"))
+              print(f"OK: {name}")
+
+          plugin = json.loads(Path(".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+          marketplace = json.loads(Path(".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
+
+          assert plugin["name"] == "kicad-pcb-designer"
+          assert plugin["version"] == "1.0.0"
+          assert marketplace["name"] == "novin3dp-kicad"
+          assert any(p["name"] == "kicad-pcb-designer" for p in marketplace["plugins"])
+          print("Plugin metadata checks passed.")
+          PY
+
+      - name: Validate skill entrypoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r skill; do
+            found=1
+            test -s "$skill"
+            echo "OK: $skill"
+          done < <(find skills -mindepth 2 -maxdepth 2 -name SKILL.md -type f | sort)
+          test "$found" -eq 1
+          echo "Skill entrypoint checks passed."

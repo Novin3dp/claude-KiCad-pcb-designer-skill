@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "novin3dp-kicad",
+  "description": "Claude Code Agent Skills for AI-assisted KiCad schematic and PCB design automation.",
+  "owner": {
+    "name": "Novin3dp"
+  },
+  "plugins": [
+    {
+      "name": "kicad-pcb-designer",
+      "description": "Claude Code skills for AI-assisted KiCad PCB design automation: schematic generation, ERC/DRC verification, placement, routing, BGA fan-out, DDR3 length matching, design review, and manufacturing release.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novin3dp"
+      },
+      "source": "./",
+      "category": "development",
+      "homepage": "https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill"
+    }
+  ]
+}

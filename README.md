@@ -1,6 +1,6 @@
-# Claude KiCad PCB Designer Skill
+# Claude Code KiCad PCB Designer Skill — AI PCB Design Automation
 
-Two [Claude Code](https://claude.com/claude-code) skills that take a board from **idea → ERC-clean KiCad schematic → routed, DRC-clean PCB → manufacturer-ready release package**, with every step scripted, reproducible and verified with `kicad-cli`.
+Two [Claude Code](https://claude.com/claude-code) skills for **AI-assisted KiCad PCB design automation**, taking a board from **idea → ERC-clean KiCad schematic → placed and routed PCB → DRC-clean design → manufacturer-ready release package**, with every step scripted, reproducible and verified with `kicad-cli`.
 
 ![KiCad 3D viewer render of a dense multi-layer board with a BGA SoC, 40-pin header, USB-C and a power stage](docs/images/example-board-3d.png)
 
@@ -18,6 +18,46 @@ The skills tell an AI *what to do and what to check*; the toolkit provides the *
 
 ---
 
+
+## What is this project?
+
+**Claude Code KiCad PCB Designer Skill** is an open-source **AI-assisted PCB design workflow for KiCad**. It gives [Claude Code](https://claude.com/claude-code) reusable skills for **KiCad schematic generation, PCB placement, PCB autorouting, ERC/DRC verification, signal-length tuning, design review, and manufacturing release**.
+
+If you are looking for a **KiCad AI agent**, **Claude Code PCB design skill**, **KiCad automation**, **AI PCB designer**, **KiCad schematic generator**, or **KiCad autorouter workflow**, this repository is designed for that use case.
+
+### Search terms and aliases
+
+- Claude Code KiCad skill
+- Claude Code PCB design
+- Claude Code PCB designer
+- AI PCB design
+- AI PCB layout
+- AI EDA agent
+- KiCad AI automation
+- KiCad automation with Python
+- KiCad schematic generator
+- KiCad PCB autorouter
+- KiCad PCB routing automation
+- KiCad ERC DRC automation
+- KiCad 9 automation
+- KiCad 10 automation
+- kicad-cli ERC DRC
+- pcbnew Python automation
+- BGA PCB routing
+- DDR3 PCB length matching
+- differential pair routing
+- Gerber manufacturing release
+- Claude Code hardware design
+- Claude skills for electronics
+
+### Why this repository is different
+
+This is not only a prompt collection or a wrapper around an external autorouter. The skills define a **verified, staged engineering workflow** from schematic to fabrication:
+
+**requirements → schematic → ERC/netcheck → placement → BGA fan-out → planes/decoupling → autorouting → DRC repair → length/skew tuning → independent design review → ECO → Gerber/BOM/CPL release**
+
+The workflow is intended for real boards, including dense multi-layer designs, BGA devices, DDR3 memory, differential pairs, power planes, and manufacturing outputs.
+
 ## Table of contents
 
 - [Capabilities at a glance](#capabilities-at-a-glance)
@@ -32,6 +72,7 @@ The skills tell an AI *what to do and what to check*; the toolkit provides the *
 - [Quality gates and honesty rules](#quality-gates-and-honesty-rules)
 - [Limitations](#limitations)
 - [Documentation](#documentation)
+- [Claude Code + KiCad PCB design guide](docs/claude-code-kicad-pcb-design.md)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -216,6 +257,23 @@ cd examples/demo && ./run_demo.sh   # route the demo board, DRC, write a viewer
 
 ---
 
+## Claude Code plugin installation
+
+This repository is also packaged as a **Claude Code plugin/marketplace**, so the skills can be discovered and installed directly from GitHub instead of copying the skill folders manually. Claude Code plugins are the standard distribution mechanism for reusable skills.
+
+From a Claude Code session:
+
+```text
+/plugin marketplace add Novin3dp/claude-KiCad-pcb-designer-skill
+/plugin install kicad-pcb-designer@novin3dp-kicad
+```
+
+For local development, clone the repository and load it directly with Claude Code's plugin directory support.
+
+### Marketplace publication
+
+The repository is packaged in the standard Claude Code plugin structure with `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`. The next distribution step is submission to Anthropic's community plugin directory. The directory accepts third-party plugin submissions through its submission form; after review and approval, accepted plugins are mirrored into the community marketplace.
+
 ## Installation
 
 ### Option A: install script
@@ -283,7 +341,15 @@ Ubuntu 24.04 setup commands are in [docs/installation.md](docs/installation.md#k
 .
 ├── README.md
 ├── LICENSE
-├── AGENTS.md                     entry point for any AI agent
+├── AGENTS.md                    entry point for any AI agent (model-agnostic)
+├── CITATION.cff                 software citation metadata
+├── llms.txt                     machine-readable project map for AI tools
+├── .claude-plugin/
+│   ├── plugin.json              Claude Code plugin metadata
+│   └── marketplace.json         Claude Code marketplace manifest
+├── .github/
+│   └── workflows/
+│       └── validate-plugin.yml  manifest + skill structure validation
 ├── skills/
 │   ├── kicad-schematic-generator/
 │   │   ├── SKILL.md              skill instructions (embeds kigen.py and netcheck.py verbatim)
@@ -296,6 +362,7 @@ Ubuntu 24.04 setup commands are in [docs/installation.md](docs/installation.md#k
 │   ├── README.md  AGENTS.md  Makefile  requirements.txt
 │   ├── kat/  csrc/  schematic/  examples/  tests/
 ├── docs/
+│   ├── claude-code-kicad-pcb-design.md
 │   ├── installation.md
 │   ├── schematic-generator.md
 │   ├── pcb-autorouter-workflow.md
