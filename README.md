@@ -70,6 +70,7 @@ The workflow is intended for real boards, including dense multi-layer designs, B
 - [Quality gates and honesty rules](#quality-gates-and-honesty-rules)
 - [Limitations](#limitations)
 - [Documentation](#documentation)
+- [Claude Code + KiCad PCB design guide](docs/claude-code-kicad-pcb-design.md)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -294,6 +295,7 @@ Ubuntu 24.04 setup commands are in [docs/installation.md](docs/installation.md#k
 │   └── kicad-pcb-autorouter-workflow/
 │       └── SKILL.md              PCB placement/routing/release workflow
 ├── docs/
+│   ├── claude-code-kicad-pcb-design.md
 │   ├── installation.md
 │   ├── schematic-generator.md
 │   ├── pcb-autorouter-workflow.md
