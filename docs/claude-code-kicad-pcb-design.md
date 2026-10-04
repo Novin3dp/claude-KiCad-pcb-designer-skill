@@ -1,6 +1,6 @@
 # Claude Code KiCad PCB Design Automation
 
-**Claude Code KiCad PCB Designer Skill** is an open-source workflow for AI-assisted PCB design with KiCad. It provides Claude Code skills for generating schematics, designing and routing PCBs, running ERC/DRC verification, tuning high-speed constraints, reviewing designs, and preparing manufacturing outputs.
+**Claude Code KiCad PCB Designer Skill** is an open-source **AI-agent-ready PCB design system for KiCad**. It combines Agent Skills with a runnable Python/C toolkit (KAT). The Skills provide the engineering workflow; KAT provides executable KiCad automation and routing/repair primitives. Therefore the code can be driven by Claude Code or by another AI agent that can execute Python/shell commands and manipulate project files.
 
 Repository: https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill
 
@@ -40,6 +40,22 @@ The `kicad-pcb-autorouter-workflow` skill covers an end-to-end PCB layout workfl
 - pair-skew tuning
 - design review
 - manufacturing release
+
+## The executable toolkit
+
+The [`toolkit/`](../toolkit/README.md) directory contains the source code used to perform the PCB operations. Important components include:
+
+- `kat/ncroute.py` — negotiated-congestion autorouter with a compiled C core.
+- `kat/astar1.py` — exact local connection routing for dense areas.
+- `kat/movevia.py` and `kat/place_free.py` — geometry/placement repair.
+- `kat/plane_via.py`, `kat/cluster_link.py`, `kat/gnd_pour.py` — plane and copper repair.
+- `kat/pair_skew.py` and `kat/ddr_tune.py` — high-speed length/skew tuning.
+- `kat/eco.py` — apply schematic/netlist changes to a routed board.
+- `kat/drc.sh` — refill + KiCad DRC workflow.
+- `kat/make_viewer.py`, `layerplot.py`, `netplot.py` — machine-friendly visual review outputs.
+- `schematic/kigen.py` and `netcheck.py` — Python schematic generation and connectivity checks.
+
+An AI agent can orchestrate these tools stage by stage. The toolkit uses KiCad's own `pcbnew` API rather than asking the model to hand-edit raw PCB geometry.
 
 ## Verification-first PCB design
 
