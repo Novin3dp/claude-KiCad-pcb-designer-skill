@@ -1,7 +1,7 @@
 {
   "name": "kicad-pcb-designer",
   "version": "1.0.0",
-  "description": "Claude Code skills for AI-assisted KiCad PCB design automation: schematic generation, ERC/DRC verification, placement, routing, BGA fan-out, DDR3 length matching, design review, and manufacturing release.",
+  "description": "AI-agent-ready KiCad PCB design system with executable Python/C toolkit for schematic generation, placement, routing, ERC/DRC verification, DDR/differential-pair tuning, ECO, review, and manufacturing release.",
   "author": {
     "name": "Novin3dp",
     "url": "https://github.com/Novin3dp"
