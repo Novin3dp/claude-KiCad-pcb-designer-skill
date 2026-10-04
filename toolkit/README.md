@@ -1,5 +1,9 @@
 # kicad-autoroute-toolkit (KAT)
 
+## Executable PCB design toolkit for AI agents
+
+KAT is the **runnable implementation layer** of this repository. It is deliberately AI-agent agnostic: Claude Code, Codex, GitHub Copilot, Gemini/Antigravity, Cursor, another automation agent, or a human can invoke the same command-line tools. The agent supplies the design intent and orchestration; KAT performs deterministic KiCad operations and produces new board artifacts.
+
 Python tools for scripted KiCad board design. Any person or AI agent can drive them: every tool is a small CLI that
 reads a `.kicad_pcb`, changes it through KiCad's own `pcbnew` Python API, and writes a new file. Nothing is edited in
 place.
