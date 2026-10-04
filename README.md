@@ -220,6 +220,19 @@ Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZON
 
 ---
 
+## Claude Code plugin installation
+
+This repository is also packaged as a **Claude Code plugin/marketplace**, so the skills can be discovered and installed directly from GitHub instead of copying the skill folders manually. Claude Code plugins are the standard distribution mechanism for reusable skills.
+
+From a Claude Code session:
+
+```text
+/plugin marketplace add Novin3dp/claude-KiCad-pcb-designer-skill
+/plugin install kicad-pcb-designer@novin3dp-kicad
+```
+
+For local development, clone the repository and load it directly with Claude Code's plugin directory support.
+
 ## Installation
 
 ### Option A: install script
