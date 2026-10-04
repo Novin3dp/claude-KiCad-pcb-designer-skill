@@ -2,7 +2,7 @@
 
 Skill: [`skills/kicad-pcb-autorouter-workflow/SKILL.md`](../skills/kicad-pcb-autorouter-workflow/SKILL.md)
 
-The skill is a methodology. Claude writes the per-board scripts (placement, fan-out, router, repair, viewer export); this guide explains the ideas so you can review and steer them.
+The skill is a methodology; the code that implements it is in [`toolkit/`](../toolkit/README.md) (see its README for exact usage and [`AGENTS.md`](../AGENTS.md) for the AI-agent entry point). This guide explains the ideas so you can review and steer them.
 
 ## When to use it
 
@@ -51,7 +51,7 @@ Small exact tools beat re-running the big router for one stubborn net:
 | `place_free.py REF X Y R SIDE ROTS CL` | Nearest legal spot for a new or moved part. Prefilter obstacles to a window or it is slow. |
 | `plane_via.py IN OUT NET[,NET] [R]` | Drop a checked via inside a filled zone for an orphan plane pad. |
 
-These names come from the skill; the scripts are written per project and are not shipped in this repository.
+These tools are in [`toolkit/kat/`](../toolkit/kat). Check [`toolkit/README.md`](../toolkit/README.md) for their exact arguments, which can differ from the shorthand above.
 
 ## Placement details worth checking
 

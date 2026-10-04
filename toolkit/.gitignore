@@ -1,0 +1,7 @@
+kat/libncr.so
+__pycache__/
+*.kicad_prl
+*_ncstate.pkl
+*_nclog.json
+examples/demo/demo*.kicad_p*
+examples/demo_sch/out/

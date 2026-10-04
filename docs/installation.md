@@ -32,6 +32,18 @@ mkdir -p ~/.config/kicad/$V && cp /usr/share/kicad/template/{sym,fp}-lib-table ~
 
 On other systems install KiCad from [kicad.org](https://www.kicad.org/download/) and make sure `kicad-cli`, the symbol library directory and `pdftotext`/`pdftoppm` are available. If the symbol libraries are not in `/usr/share/kicad/symbols`, set `KICAD_SYMBOL_DIR`.
 
+## Toolkit setup (optional, for running the PCB tools)
+
+```bash
+cd toolkit
+pip install -r requirements.txt      # add --break-system-packages on a managed Python
+make                                 # builds kat/libncr.so with gcc
+python3 -c "import pcbnew; print(pcbnew.Version())"   # must work; pcbnew comes with KiCad, not pip
+cd examples/demo && ./run_demo.sh && ../../tests/smoke.sh
+```
+
+If `import pcbnew` fails, use the Python interpreter that your KiCad installation provides (on Ubuntu the distribution Python that matches the KiCad package, not a separately installed one). The toolkit targets KiCad 8-10.
+
 ## Environment variables read by `kigen`
 
 | Variable | Default | Meaning |

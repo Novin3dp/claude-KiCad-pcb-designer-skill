@@ -10,8 +10,9 @@ Two [Claude Code](https://claude.com/claude-code) skills that take a board from 
 |---|---|
 | [`kicad-schematic-generator`](skills/kicad-schematic-generator/SKILL.md) | Generates complete, hierarchical KiCad 9/10 schematic projects from Python and proves them correct with ERC, netlist checks and design-specific assertions. |
 | [`kicad-pcb-autorouter-workflow`](skills/kicad-pcb-autorouter-workflow/SKILL.md) | A staged process for placing and routing a custom PCB with a negotiated-congestion (PathFinder-style) autorouter, repairing planes and DRC, tuning length/skew, reviewing in an interactive HTML viewer and shipping fab files. |
+| [`toolkit/`](toolkit/README.md) (KAT) | The Python and C code behind the workflow: a negotiated-congestion autorouter, local repair tools, plane/pour tools, DDR and pair tuning, ECO, an interactive viewer and a schematic generator. Plain command-line tools, so **any AI agent or person can run them**, not only Claude. |
 
-They work together (schematic first, then PCB) but each can be used on its own.
+The skills tell an AI *what to do and what to check*; the toolkit provides the *code to do it*. They work together (schematic first, then PCB) but each can be used on its own. AI agents should start at [`AGENTS.md`](AGENTS.md).
 
 > **Keywords:** KiCad 9 / KiCad 10 · PCB design automation · schematic generator · PCB autorouter · `kicad-cli` ERC/DRC · Gerber X2 · BGA fan-out · DDR3 length tuning · differential pairs · Claude Code skills · agent skills
 
@@ -22,6 +23,7 @@ They work together (schematic first, then PCB) but each can be used on its own.
 - [Capabilities at a glance](#capabilities-at-a-glance)
 - [Skill 1: Schematic generator in detail](#skill-1-schematic-generator-in-detail)
 - [Skill 2: PCB + autorouter workflow in detail](#skill-2-pcb--autorouter-workflow-in-detail)
+- [The toolkit (KAT): runnable Python code](#the-toolkit-kat-runnable-python-code)
 - [End-to-end pipeline](#end-to-end-pipeline)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -134,7 +136,7 @@ Duplicate references across sheets that ERC misses, pin-name vs. pin-number coll
 
 A repeatable process for taking a KiCad schematic to a routed, DRC-clean, manufacturer-ready PCB. It was proven on a 6-layer Allwinner H3 + DDR3 single-board computer (85 x 56 mm, TFBGA-347 at 0.65 mm pitch, HDMI Type A, 275 parts, DRC 0 / ERC 0 / schematic parity 0), taken through ECO releases v2 to v5.1 including a full independent design review.
 
-**Important:** this skill is a *methodology and checklist* that Claude executes by writing per-project Python scripts against KiCad's `pcbnew` API (for example `stage1.py`, `stage2.py`, `ncroute.py`, `cfg_<board>.py`, and helper tools such as `astar1.py`, `movevia.py`, `place_free.py`, `plane_via.py`). The skill describes what each helper does; the code is not included here. The router itself is generated and tuned for each board; it is not a standalone binary shipped in this repository.
+**Important:** this skill is a *methodology and checklist*. The code it refers to (`ncroute.py`, `astar1.py`, `movevia.py`, `place_free.py`, `plane_via.py` and more) lives in [`toolkit/`](toolkit/README.md). The helper names in the skill match the toolkit's file names, but the skill text was written before the toolkit existed, so treat [`toolkit/README.md`](toolkit/README.md) as the authority on exact command-line usage.
 
 ### What each stage covers
 
@@ -159,6 +161,41 @@ Guidance for counting fill pieces per zone, DRU rules that let plane web flow be
 ### Tooling pitfalls it records
 
 Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZONE_FILLER`; one bad DRU rule silently dropping all custom rules; `GetConnectedItems` not being transitive; SWIG wrappers degrading after `board.Remove()`; unlocked vias disappearing on rip-up; SWIG proxies that must not be compared with `is`; footprint-owned rule areas that every custom tool must load; pad sizes that are pre-rotation; the roughly 2-minute shell limit that requires background jobs with `.done` markers; never `pkill -f` with a pattern that matches your own shell. See [docs/pcb-autorouter-workflow.md](docs/pcb-autorouter-workflow.md).
+
+## The toolkit (KAT): runnable Python code
+
+**Folder:** [`toolkit/`](toolkit/README.md) (kicad-autoroute-toolkit). Imported unchanged from its original project, with its own README, `AGENTS.md`, MIT license, Makefile and smoke test.
+
+Every tool is a small command-line program that reads a `.kicad_pcb`, changes it through KiCad's own `pcbnew` Python API and **writes a new file** (nothing is edited in place). Because the interface is plain files, arguments and environment variables, any AI agent, script or person can drive them.
+
+| Area | Tools (in `toolkit/kat/` unless noted) |
+|---|---|
+| Autorouting | `ncroute.py` (negotiated-congestion / PathFinder router with a C core in `csrc/ncr.c`, differential pairs, keepouts, per-net classes) + a per-board config (`cfg_template.py`) |
+| Local fixes in dense areas | `astar1.py` (one exact connection), `movevia.py`, `place_free.py`, `restore_net.py` |
+| Planes and pours | `plane_via.py`, `cluster_link.py`, `gnd_pour.py` |
+| Clean-up and checks | `drc.sh` + `drcsum.py` (refill, DRC, readable summary), `dangle2.py`, `silk_refs.py` |
+| Length and skew | `pair_skew.py`, `ddr_rubber.py`, `ddr_tune.py`, `ddrsum.py` (+ `tune2.py`, `tune3.py`, `ddr_report.py`) |
+| ECO | `eco.py` (apply a new netlist to a routed board), `copy_fields.py` (MPN/LCSC fields, DNP) |
+| Review | `make_viewer.py` (interactive HTML viewer), `layerplot.py`, `netplot.py` (PNGs so an AI can *look* at a region) |
+| Schematic | `schematic/kigen.py`, `schematic/common.py`, `schematic/netcheck.py` |
+| Examples | `examples/demo` (4-layer demo: route, DRC, viewer), `examples/demo_sch` (Python to schematic), `examples/h3_sbc` (reference files from the 6-layer H3 + DDR3 board; paths point at the original project) |
+
+### Quick start
+
+```bash
+cd toolkit
+pip install -r requirements.txt     # numpy, scipy, shapely>=2, matplotlib, Pillow
+make                                # builds kat/libncr.so (needs gcc)
+cd examples/demo && ./run_demo.sh   # route the demo board, DRC, write a viewer
+../../tests/smoke.sh                # exercise every generic tool
+```
+
+### Status of this import (please read)
+
+- The toolkit's documentation states it was built and proven on KiCad 10.0 / Python 3.11 / Ubuntu 24.04 (KiCad 8, 9 and 10 supported).
+- When it was added to this repository it was checked **statically only**: all 51 Python files compile, all shell scripts pass `bash -n`, and the C core compiles with `gcc`. 
+- The **demo and smoke test were not run** here, because the sandbox used for the import only had KiCad 7.0.11 (the toolkit needs the KiCad 8+ `pcbnew` API, for example `pcbnew.ERROR_OUTSIDE`). Run `examples/demo/run_demo.sh` and `tests/smoke.sh` on your own KiCad 8-10 install before relying on a result.
+- `toolkit/schematic/kigen.py` is a project-specific variant (title block and project name are hard-coded for the original H3 board). For new projects prefer the generic [`skills/kicad-schematic-generator/gen/kigen.py`](skills/kicad-schematic-generator/gen/kigen.py), which reads `KIGEN_PROJECT`, `KIGEN_COMPANY` and `KIGEN_DATE` from the environment.
 
 ---
 
@@ -231,7 +268,8 @@ python3 examples/minimal-board/build.py     # writes examples/minimal-board/kica
 |---|---|
 | Claude Code | To load and run the skills. |
 | KiCad 9 or 10 | Install the **same major version you use**; KiCad 7 has no `kicad-cli sch erc`. Output built on KiCad 10 libraries can contain tokens KiCad 9 cannot read. |
-| Python 3 | Runs `kigen.py`, `netcheck.py` and your project scripts. `pcbnew` (bundled with KiCad) is needed for PCB work. |
+| Python 3 | Runs `kigen.py`, `netcheck.py` and the toolkit. `pcbnew` (bundled with KiCad) is needed for PCB work, so use the Python that can `import pcbnew`. |
+| Toolkit extras | `pip install -r toolkit/requirements.txt` (numpy, scipy, shapely >= 2, matplotlib, Pillow) and `gcc` + `make` to build the router core. The toolkit targets KiCad 8-10. |
 | `poppler-utils` | `pdftotext` / `pdftoppm` for reading datasheets and reference schematics. |
 | Optional | `scipy` / `numpy` for routing-grid analysis; a 2-D field solver for Zdiff. |
 
@@ -245,6 +283,7 @@ Ubuntu 24.04 setup commands are in [docs/installation.md](docs/installation.md#k
 .
 ├── README.md
 ├── LICENSE
+├── AGENTS.md                     entry point for any AI agent
 ├── skills/
 │   ├── kicad-schematic-generator/
 │   │   ├── SKILL.md              skill instructions (embeds kigen.py and netcheck.py verbatim)
@@ -253,6 +292,9 @@ Ubuntu 24.04 setup commands are in [docs/installation.md](docs/installation.md#k
 │   │       └── netcheck.py       netlist sanity checker
 │   └── kicad-pcb-autorouter-workflow/
 │       └── SKILL.md              PCB placement/routing/release workflow
+├── toolkit/                      runnable Python/C tools (KAT): router, repair, tuning, ECO, viewer, schematic
+│   ├── README.md  AGENTS.md  Makefile  requirements.txt
+│   ├── kat/  csrc/  schematic/  examples/  tests/
 ├── docs/
 │   ├── installation.md
 │   ├── schematic-generator.md
@@ -282,7 +324,7 @@ These rules are part of the skills and are what make the output trustworthy:
 
 ## Limitations
 
-- The router and stage scripts are written per project by Claude; results depend on board density and your review.
+- The toolkit's results depend on board density, per-board configuration and your review. It has not been re-verified as part of this repository (see the status note above).
 - No SI/PI simulation is performed; Zdiff comes from a 2-D field solver and DDR timing is reported as mismatch only.
 - Pinouts for new parts depend on the datasheet or reference design you can supply or Claude can fetch.
 - The skills target KiCad 9/10; other versions are not supported.
