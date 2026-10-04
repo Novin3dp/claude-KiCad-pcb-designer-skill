@@ -1,6 +1,6 @@
-# Claude KiCad PCB Designer Skill
+# Claude Code KiCad PCB Designer Skill — AI PCB Design Automation
 
-Two [Claude Code](https://claude.com/claude-code) skills that take a board from **idea → ERC-clean KiCad schematic → routed, DRC-clean PCB → manufacturer-ready release package**, with every step scripted, reproducible and verified with `kicad-cli`.
+Two [Claude Code](https://claude.com/claude-code) skills for **AI-assisted KiCad PCB design automation**, taking a board from **idea → ERC-clean KiCad schematic → placed and routed PCB → DRC-clean design → manufacturer-ready release package**, with every step scripted, reproducible and verified with `kicad-cli`.
 
 ![KiCad 3D viewer render of a dense multi-layer board with a BGA SoC, 40-pin header, USB-C and a power stage](docs/images/example-board-3d.png)
 
