@@ -102,6 +102,8 @@ The workflow is intended for real boards, including dense multi-layer designs, B
 
 **PCB placement and routing**
 - Multi-stage placement with courtyard-overlap checking, escape-corridor keepouts reserved before small parts are placed, and signal-order checks along each chain.
+- Signal-cluster-aware placement using connectivity groups to keep related components together, with cluster placement and relocation helpers.
+- Plane-layer escalation workflow for resolving congested copper/plane situations, including escalation configuration and slot-bridge helpers.
 - BGA fan-out (dog-bone vias), split power planes with wide necks, decoupling-capacitor via strategy, via-in-pad where rear rows cannot escape.
 - A negotiated-congestion autorouter workflow: one routing object per net or differential pair, a legality field built from all existing copper, and rip-up with present x history pressure until conflicts reach 0 or plateau.
 - Per-board configuration of layers, grid, net-class clearances, widths, layer costs, pair handling, via cost, keepouts and plane nets.
@@ -214,14 +216,25 @@ Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZON
 
 `toolkit/` is the most important addition for AI-agent use. An AI does not need to understand or rewrite the KiCad file format itself: it can call the toolkit's small CLI programs, pass a source `.kicad_pcb` and configuration, and receive a new board file. Each stage produces a new artifact, which makes the workflow reproducible and reviewable.
 
+### KAT v4.4 additions
+
+The v4.4 toolkit expands placement and copper-plane recovery workflows for boards where ordinary routing is constrained:
+
+- **Connectivity-cluster placement:** group related parts by signal connectivity, place clusters as units, and refine/relocate components with the cluster-placement flow (`cluster_place.py`, `cluster_flow.sh`).
+- **Plane-layer escalation:** try configured layer-escalation strategies when routing or plane connectivity is blocked (`escalate.sh`, `cfg_escalate.py`, `esc_layer.py`).
+- **Slot bridging:** add a targeted bridge across routing/plane slots where the configured geometry permits it (`slot_bridge.py`).
+- **Existing KAT stages remain integrated:** negotiated-congestion routing, local A* repair, plane repair, tuning, DRC and interactive review use the same file-based workflow.
+
+These are routing/placement aids, not a guarantee of a routable board. Review the generated board and run the required KiCad DRC/ERC and connectivity checks before manufacturing.
+
 ### What an AI agent can actually do with KAT
 
 - Generate a KiCad schematic from Python and verify connectivity/ERC.
 - Read a placed KiCad PCB through `pcbnew` and create a new routed/modified PCB.
 - Run negotiated-congestion autorouting with per-board routing configuration.
 - Route difficult individual connections with exact grid A*.
-- Move vias or components to open legal routing channels.
-- Restore BGA fan-out and repair stranded plane connectivity.
+- Move vias or components to open legal routing channels, including signal-cluster placement/relocation support.
+- Restore BGA fan-out and repair stranded plane connectivity, including plane-layer escalation and slot-bridging workflows.
 - Create and repair power/GND pours and stitching vias.
 - Tune USB/HDMI/Ethernet differential-pair skew and DDR3 length matching.
 - Apply schematic/netlist ECOs to an already-routed board.
@@ -240,10 +253,12 @@ Every tool is a small command-line program that reads a `.kicad_pcb`, changes it
 | Autorouting | `ncroute.py` (negotiated-congestion / PathFinder router with a C core in `csrc/ncr.c`, differential pairs, keepouts, per-net classes) + a per-board config (`cfg_template.py`) |
 | Local fixes in dense areas | `astar1.py` (one exact connection), `movevia.py`, `place_free.py`, `restore_net.py` |
 | Planes and pours | `plane_via.py`, `cluster_link.py`, `gnd_pour.py` |
+| Plane-layer escalation (KAT v4.4) | `escalate.sh`, `cfg_escalate.py`, `esc_layer.py`, `slot_bridge.py` |
 | Clean-up and checks | `drc.sh` + `drcsum.py` (refill, DRC, readable summary), `dangle2.py`, `silk_refs.py` |
 | Length and skew | `pair_skew.py`, `ddr_rubber.py`, `ddr_tune.py`, `ddrsum.py` (+ `tune2.py`, `tune3.py`, `ddr_report.py`) |
 | ECO | `eco.py` (apply a new netlist to a routed board), `copy_fields.py` (MPN/LCSC fields, DNP) |
 | Review | `make_viewer.py` (interactive HTML viewer), `layerplot.py`, `netplot.py` (PNGs so an AI can *look* at a region) |
+| Placement assistance (KAT v4.4) | `cluster_place.py`, `cluster_flow.sh`, placement/relocation helpers for connectivity-based signal clusters |
 | Schematic | `schematic/kigen.py`, `schematic/common.py`, `schematic/netcheck.py` |
 | Examples | `examples/demo` (4-layer demo: route, DRC, viewer), `examples/demo_sch` (Python to schematic), `examples/h3_sbc` (reference files from the 6-layer H3 + DDR3 board; paths point at the original project) |
 
