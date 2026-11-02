@@ -210,7 +210,7 @@ Guidance for counting fill pieces per zone, DRU rules that let plane web flow be
 
 ### Tooling pitfalls it records
 
-Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZONE_FILLER`; one bad DRU rule silently dropping all custom rules; `GetConnectedItems` not being transitive; SWIG wrappers degrading after `board.Remove()`; unlocked vias disappearing on rip-up; SWIG proxies that must not be compared with `is`; footprint-owned rule areas that every custom tool must load; pad sizes that are pre-rotation; the roughly 2-minute shell limit that requires background jobs with `.done` markers; never `pkill -f` with a pattern that matches your own shell. See [docs/pcb-autorouter-workflow.md](docs/pcb-autorouter-workflow.md).
+Copying `.kicad_pro` + `.kicad_dru` next to every intermediate board before `ZONE_FILLER`; one bad DRU rule silently dropping all custom rules; `GetConnectedItems` not being transitive; SWIG wrappers degrading after `board.Remove()`; unlocked vias disappearing on rip-up; SWIG proxies that must not be compared with `is`; footprint-owned rule areas that every custom tool must load; pad sizes that are pre-rotation; the roughly 2-minute shell limit that requires background jobs with `.done` markers; never `pkill -f` with a pattern that matches your own shell. See [skills/kicad-pcb-autorouter-workflow/SKILL.md](skills/kicad-pcb-autorouter-workflow/SKILL.md).
 
 ## The toolkit (KAT): the executable design engine
 
@@ -406,7 +406,7 @@ Ubuntu 24.04 setup commands are in [docs/installation.md](docs/installation.md#k
 │   ├── claude-code-kicad-pcb-design.md
 │   ├── installation.md
 │   ├── schematic-generator.md
-│   ├── pcb-autorouter-workflow.md
+│   └── (workflow details are maintained in skills/kicad-pcb-autorouter-workflow/SKILL.md)
 │   └── images/
 ├── examples/
 │   └── minimal-board/build.py    smallest possible kigen project
@@ -443,7 +443,7 @@ These rules are part of the skills and are what make the output trustworthy:
 - [Installation and environment setup](docs/installation.md)
 - [GitHub description and topics](docs/repository-metadata.md)
 - [Schematic generator guide](docs/schematic-generator.md)
-- [PCB + autorouter workflow guide](docs/pcb-autorouter-workflow.md)
+- [PCB + autorouter workflow guide](skills/kicad-pcb-autorouter-workflow/SKILL.md)
 
 ## Contributing
 
