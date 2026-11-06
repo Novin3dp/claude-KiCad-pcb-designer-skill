@@ -66,3 +66,12 @@ stages, write a new file at every stage, and report each stage to the user. Neve
 - Long jobs: `setsid nohup bash job.sh &` plus a `.done` marker. Never kill `ncroute.py` mid-run.
 - Look at the board, not only at numbers: `layerplot.py` / `netplot.py` PNGs of the region you change.
 - When a change cannot be undone or alters the architecture, ask the user first.
+
+
+## v4.4 tools and guardrails
+
+- Plane-layer escalation is a last resort: normal routing layers first, then only remaining open signal nets. Preserve inherited keep-outs, shield high-speed reference copper, bridge every slot crossing, refill, and inspect `esc_layer.py report`.
+- `ncroute_msla.py` push-and-shove is transactional and expensive. Enable it late, bound its depth/budget, and accept only a net improvement in conflict score followed by DRC and connectivity checks.
+- `cluster_place.py` moves connected signal groups; always inspect its JSON/NETRX outputs, check decoupling and mechanical constraints, and reroute affected copper. Avoid using it around dense ICs/buses where it cannot create usable space.
+- Use `oracle.py` / `gate.py` to compare connectivity between stages. Never promote a stage that loses a net or increases open links.
+- For 2-layer boards, keep the v3 GND-as-tracks rule; the 4-layer plane-layer escalation workflow is not a substitute for a properly connected return path.
