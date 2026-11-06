@@ -38,3 +38,8 @@ KiCad version you used.
   the vendor reference, footprint pads without nets, and list what still needs a physical check.
 - Verify every automated review finding yourself before changing anything; ask the user before changes that alter
   the architecture or cannot be undone.
+
+
+## KAT v4.4 update notes
+
+The toolkit now documents the v4.4 plane-layer escalation, slot bridging, transactional push-and-shove router, and signal-cluster placement flows. Before using them, read `toolkit/CHANGELOG.md` and `toolkit/AGENTS.md`; keep the escalation layer shielded from high-speed copper, inspect bus crossings and plane islands, and use the shove router only on the small remaining conflict set. A successful script exit is not proof of electrical correctness: refill zones and run KiCad DRC plus connectivity review after every stage.
