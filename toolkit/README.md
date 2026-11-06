@@ -21,7 +21,10 @@ The toolkit was built and proven on a 6-layer Allwinner H3 + DDR3 single-board c
 | Clean-up and checks | `drc.sh` + `drcsum.py`, `dangle2.py`, `silk_refs.py` |
 | Length and skew | `pair_skew.py`, `ddr_rubber.py`, `ddr_tune.py`, `ddrsum.py` (+ `tune2.py`, `tune3.py`, `ddr_report.py`) |
 | ECO (schematic -> routed board) | `eco.py`, `copy_fields.py` |
-| Review and hand-off | `make_viewer.py` (interactive HTML board viewer), `layerplot.py`, `netplot.py` |
+| Review and hand-off | `make_viewer.py` (interactive HTML board viewer), `layerplot.py`, `netplot.py`, `oracle.py`, `gate.py`, `review.py`, `place_score.py` |
+| Placement / recovery | `placer.py`, `cluster_place.py`, `relocate.py`, `decap_fix.py`, `plane_repair.py`, `gnd_islands.py` |
+| Plane escalation (v4.4) | `escalate.sh`, `cfg_escalate.py`, `esc_layer.py`, `slot_bridge.py` |
+| Push-and-shove / tuning | `pns.py`, `ncroute_msla.py`, `shove_tune.py`, `stitch.py`, `neckdown.py`, `ipc_width.py`, `net_area.py` |
 
 ## Requirements
 
@@ -170,3 +173,21 @@ AGENTS.md         how an AI agent should use this toolkit
 ## License
 
 MIT (see `LICENSE`). Change it if you publish under another license.
+
+
+## KAT v4.4 workflows
+
+The current v4.4 source package adds three substantial workflow groups:
+
+### Plane-layer escalation (last resort)
+Run the normal signal layers first. Only remaining open signal nets may be routed on the designated plane layer, with inherited keep-outs and a shield around high-speed reference copper. Then refill zones, bridge slots cut through the plane, repair stranded islands, and inspect the report. Key entry points: `kat/escalate.sh`, `kat/cfg_escalate.py`, `kat/esc_layer.py`, and `kat/slot_bridge.py`.
+
+### Transactional push-and-shove routing
+`kat/ncroute_msla.py` adds a late-stage shove pass inside negotiated-congestion routing. It reroutes colliding nets as a bounded transaction and keeps the change only when the aggregate conflict score improves. It is intended for the final small set of conflicts, not as a default full-board pass; the changelog documents the substantial runtime cost.
+
+### Connectivity-aware placement and repair
+`kat/cluster_place.py` and `kat/cluster_flow.sh` group signal-connected parts, compact and move groups away from congested corridors, remove stale copper selectively, and hand the result to plane-via insertion, routing, closure and DRC. Supporting tools include `placer.py`, `relocate.py`, `place_score.py`, `decap_fix.py`, `oracle.py`, `gate.py`, and `review.py`.
+
+Additional v4 tools cover plane repair with optional shove/rip assistance, copper stitching, power-track neckdown, IPC-2221 width estimates, net-filtered keep-out areas, and DDR/route tuning. Read `CHANGELOG.md` and `AGENTS.md` before applying these tools to a real board.
+
+**Important:** the v4.4 archive contains compiled and generated KiCad artifacts as well as source. Do not commit `kat/libncr.so`, `__pycache__/`, `*.kicad_prl`, router state/log files, or transient demo outputs. Build the C library locally with `make`, and verify with the smoke tests and KiCad DRC/ERC on the target KiCad version.
