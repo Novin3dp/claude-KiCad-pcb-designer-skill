@@ -225,6 +225,8 @@ The v4.4 toolkit expands placement and copper-plane recovery workflows for board
 - **Slot bridging:** add a targeted bridge across routing/plane slots where the configured geometry permits it (`slot_bridge.py`).
 - **Existing KAT stages remain integrated:** negotiated-congestion routing, local A* repair, plane repair, tuning, DRC and interactive review use the same file-based workflow.
 
+The v4.4 source package also includes the newer MSLA-oriented push-and-shove router (`ncroute_msla.py`), plane connectivity recovery (`plane_repair.py`), plane-layer escalation and shielding (`escalate.sh`, `cfg_escalate.py`, `esc_layer.py`), slot restoration (`slot_bridge.py`), and supporting review/placement utilities (`oracle.py`, `gate.py`, `review.py`, `place_score.py`, `placer.py`, `relocate.py`, `decap_fix.py`, `stitch.py`, `neckdown.py`, `ipc_width.py`, `net_area.py`). The package changelog records the tested conditions and known limitations for each workflow.
+
 These are routing/placement aids, not a guarantee of a routable board. Review the generated board and run the required KiCad DRC/ERC and connectivity checks before manufacturing.
 
 ### What an AI agent can actually do with KAT
